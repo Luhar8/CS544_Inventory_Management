@@ -4,7 +4,7 @@ import pdu
 import json
 
 inventory_items = {
-    101: {"name": "Widget", "quantity": 50},
+    101: {"name": "Widget", "quantity": 100},
     102: {"name": "Gadget", "quantity": 75},
     103: {"name": "Tool", "quantity": 25}
 }
@@ -23,6 +23,7 @@ inventory_items = {
 #     await conn.send(QuicStreamEvent(message.stream_id, b'', True))
 
 # echo_server.py
+# echo_server.py
 async def inventory_server_proto(scope, conn: EchoQuicConnection):
     while True:
         message = await conn.receive()
@@ -32,17 +33,15 @@ async def inventory_server_proto(scope, conn: EchoQuicConnection):
         action = request.get('action')
         
         if action == 'update':
-            # Example: {'action': 'update', 'item_id': 101, 'quantity': 5}
             item_id = request['item_id']
             quantity_change = request['quantity']
-            print("Item_id", item_id, "Quantity", quantity_change)
             if item_id in inventory_items:
                 inventory_items[item_id]['quantity'] += quantity_change
                 response = {'status': 'success', 'description': 'Quantity updated'}
             else:
                 response = {'status': 'failed', 'description': 'Item not found'}
         elif action == 'list':
-            # Return a list of all inventory items
+            # Correctly accessing the values of the dictionary
             response = {'status': 'success', 'inventory': list(inventory_items.values())}
         else:
             response = {'status': 'error', 'description': 'Invalid action'}
@@ -50,4 +49,5 @@ async def inventory_server_proto(scope, conn: EchoQuicConnection):
         rsp_msg = json.dumps(response).encode('utf-8')
         rsp_event = QuicStreamEvent(message.stream_id, rsp_msg, False)
         await conn.send(rsp_event)
+
 

@@ -23,11 +23,11 @@ import json
 async def inventory_client_proto(scope, conn: EchoQuicConnection):
     new_stream_id = conn.new_stream()
     
-    # Send an update request
+    # Example command to update an item's quantity
     update_request = json.dumps({'action': 'update', 'item_id': 101, 'quantity': -10}).encode('utf-8')
     await conn.send(QuicStreamEvent(new_stream_id, update_request, False))
     
-    # Ask for the inventory list
+    # Request to list all inventory items
     list_request = json.dumps({'action': 'list'}).encode('utf-8')
     await conn.send(QuicStreamEvent(new_stream_id, list_request, False))
     
