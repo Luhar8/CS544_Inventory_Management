@@ -18,6 +18,7 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
 
         table = []
         headers = ["Item Number", "Item Name", "Quantity"]
+        item_ids = []
 
         # Receive and display initial inventory
         while True:
@@ -27,6 +28,7 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
                 break
             irm = pdu.InventoryResponseMessage.from_bytes(message.data)
             table.append([irm.itemID, irm.itemName, irm.quantity])
+            item_ids.append(irm.itemID)
         print(tabulate(table, headers, tablefmt="grid"))
 
         # Interaction loop for updates
@@ -34,6 +36,9 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
             response= input("[cli] Do you want to update the quantity of any item? (y/n): ").lower()
             if response == "y":
                 item_id = int(input("Enter the Item ID to update: "))
+                if item_id not in item_ids:
+                    print("You entered a wrong item ID. Please try again.")
+                    continue
                 new_quantity = int(input("Enter the new quantity: "))
                 if new_quantity<0:
                     print("[cli] Quantity cannot be negative, instead it is saved as 0")
@@ -52,7 +57,6 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
                 while True:
                     message = await conn.receive()
                     if message.end_stream:
-                        print('[cli] Received updated inventory from server')
                         break
                     irm = pdu.InventoryResponseMessage.from_bytes(message.data)
                     table.append([irm.itemID, irm.itemName, irm.quantity])
