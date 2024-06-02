@@ -12,6 +12,7 @@ import json
 
 from echo_quic import EchoQuicConnection, QuicStreamEvent
 import echo_server, echo_client
+from echo_client import inventory_client_proto
 
 ALPN_PROTOCOL = "inventory-protocol"
 
@@ -31,6 +32,18 @@ def build_client_quic_config(cert_file = None):
         configuration.load_verify_locations(cert_file)
   
     return configuration
+
+def build_client_quic_configuration(cert_file):
+    config = QuicConfiguration(is_client=True)
+    config.load_verify_locations(cafile=cert_file)
+    config.server_hostname = 'localhost'  # Set the server hostname
+    config.server_port = 4433  # Set the server port
+    return config
+
+async def client_run(configuration):
+    async with connect(configuration=configuration) as connection:
+        echo_conn = EchoQuicConnection(connection)
+        return await inventory_client_proto(echo_conn)
 
 def create_msg_payload(msg):
     return json.dumps(msg).encode('utf-8')

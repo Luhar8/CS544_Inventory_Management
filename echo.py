@@ -43,6 +43,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    print(args)
     if args.mode == 'client':
         client_mode(args)
     elif args.mode == 'server':

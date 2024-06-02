@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventory Management</time>
+</head>
+<body>
+    <h1>Inventory</h1>
+    <table>
+        <tr>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Actions</th>
+        </tr>
+        {% for item in inventory.items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td id="quantity-{{ item.id }}">{{ item.quantity }}</td>
+            <td>
+                <button onclick="updateInventory({{ item.id }}, 'increase')">+</button>
+                <button onclick="updateInventory({{ item.id }}, 'decrease')">-</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <script>
+        function updateInventory(itemId, operation) {
+            fetch('/update_inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({item_id: itemId, operation: operation})
+            }).then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const quantityElement = document.getElementById('quantity-' + itemId);
+                    const currentQuantity = parseInt(quantityElement.innerText, 10);
+                    quantityElement.innerText = operation === 'increase' ? currentQuantity + 1 : currentQuantity - 1;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
