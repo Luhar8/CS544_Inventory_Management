@@ -3,6 +3,7 @@ from echo_quic import EchoQuicConnection, QuicStreamEvent
 import pdu
 import time
 import json
+from tabulate import tabulate
 
 async def inventory_client_proto(scope, conn: EchoQuicConnection):
     # Create QIM and send
@@ -11,13 +12,18 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
     qs = QuicStreamEvent(new_stream_id, qim.to_bytes(), False)
     await conn.send(qs)
 
+    table = []
+    headers = ["Item Number","Item Name", "Quantity"]
+
     # Receive multiple IRMs
     while True:
         message = await conn.receive()
         if message.end_stream:
+            print('[cli] received Inventory items from server')
             break
         irm = pdu.InventoryResponseMessage.from_bytes(message.data)
-        print('[cli] Inventory info received:', irm.itemName, irm.quantity)
+        table.append([irm.itemID, irm.itemName, irm.quantity])
+    print(tabulate(table, headers, tablefmt="grid"))
 
 # echo_client.py
 # async def inventory_client_proto(scope, conn: EchoQuicConnection):
