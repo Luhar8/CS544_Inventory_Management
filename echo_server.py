@@ -10,44 +10,28 @@ inventory_items = [
 ]
 
 async def inventory_server_proto(scope, conn: EchoQuicConnection):
-    message = await conn.receive()
-    qim = pdu.QueryInventoryMessage.from_bytes(message.data)
-    print("[svr] Query received for client ID:", qim.clientID)
-
-    for item in inventory_items:
-        irm = pdu.InventoryResponseMessage(2, item['id'], item['name'], item['quantity'])
-        rsp_msg = irm.to_bytes()
-        rsp_event = QuicStreamEvent(message.stream_id, rsp_msg, False)
-        await conn.send(rsp_event)
-    # Optionally, close the stream after sending all items
-    await conn.send(QuicStreamEvent(message.stream_id, b'', True))
-
-# echo_server.py
-# echo_server.py
-# async def inventory_server_proto(scope, conn: EchoQuicConnection):
-#     while True:
-#         message = await conn.receive()
-#         if message.end_stream:
-#             break
-#         request = json.loads(message.data.decode('utf-8'))
-#         action = request.get('action')
+    while True:
+        message = await conn.receive()
+        print("[svr] Received message")
         
-#         if action == 'update':
-#             item_id = request['item_id']
-#             quantity_change = request['quantity']
-#             if item_id in inventory_items:
-#                 inventory_items[item_id]['quantity'] += quantity_change
-#                 response = {'status': 'success', 'description': 'Quantity updated'}
-#             else:
-#                 response = {'status': 'failed', 'description': 'Item not found'}
-#         elif action == 'list':
-#             # Correctly accessing the values of the dictionary
-#             response = {'status': 'success', 'inventory': list(inventory_items.values())}
-#         else:
-#             response = {'status': 'error', 'description': 'Invalid action'}
-        
-#         rsp_msg = json.dumps(response).encode('utf-8')
-#         rsp_event = QuicStreamEvent(message.stream_id, rsp_msg, False)
-#         await conn.send(rsp_event)
+        data = json.loads(message.data.decode('utf-8'))
+        if data['type'] == 'query':
+            print("[svr] Query received")
+            for item in inventory_items:
+                irm = pdu.InventoryResponseMessage(2, item['id'], item['name'], item['quantity'])
+                rsp_event = QuicStreamEvent(message.stream_id, irm.to_bytes(), False)
+                await conn.send(rsp_event)
+            await conn.send(QuicStreamEvent(message.stream_id, b'', True))  # Close this stream
 
-
+        elif data['type'] == 'update':
+            print("[svr] Update received")
+            item_to_update = next((item for item in inventory_items if item['id'] == data['itemID']), None)
+            if item_to_update:
+                item_to_update['quantity'] = data['newQuantity']
+                print(f"[svr] Updated item {data['itemID']} to new quantity {data['newQuantity']}")
+            
+            # Send updated inventory list
+            for item in inventory_items:
+                irm = pdu.InventoryResponseMessage(2, item['id'], item['name'], item['quantity'])
+                await conn.send(QuicStreamEvent(message.stream_id, irm.to_bytes(), False))
+            await conn.send(QuicStreamEvent(message.stream_id, b'', True))
