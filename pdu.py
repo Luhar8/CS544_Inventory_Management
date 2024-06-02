@@ -54,10 +54,12 @@ class QueryInventoryMessage:
         self.version = version
         self.clientID = clientID
         self.timestamp = timestamp
+        self.type = 'query'
 
     def to_bytes(self):
         # Simple JSON-based serialization
         return json.dumps({
+            'type': self.type,
             'version': self.version,
             'clientID': self.clientID,
             'timestamp': self.timestamp
@@ -90,3 +92,25 @@ class InventoryResponseMessage:
         # Deserialize from JSON
         obj = json.loads(data.decode('utf-8'))
         return cls(obj['version'], obj['itemID'], obj['itemName'], obj['quantity'])
+
+class UpdateInventoryMessage:
+    def __init__(self, version, itemID, newQuantity):
+        self.version = version
+        self.itemID = itemID
+        self.newQuantity = newQuantity
+        self.type = 'update'
+
+    def to_bytes(self):
+        # Simple JSON-based serialization
+        return json.dumps({
+            'type' : self.type,
+            'version': self.version,
+            'itemID': self.itemID,
+            'newQuantity': self.newQuantity
+        }).encode('utf-8')
+
+    @classmethod
+    def from_bytes(cls, data):
+        # Deserialize from JSON
+        obj = json.loads(data.decode('utf-8'))
+        return cls(obj['version'], obj['itemID'], obj['newQuantity'])
