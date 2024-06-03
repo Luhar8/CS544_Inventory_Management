@@ -1,12 +1,12 @@
 import json
-import time
+from datetime import datetime
 
 class ChangeLog:
     def __init__(self):
         self.logs = []
 
     def log(self, action, item_id, details):
-        timestamp = int(time.time())
+        timestamp = datetime.now().isoformat()
         log_entry = {
             'timestamp': timestamp,
             'action': action,
