@@ -114,3 +114,45 @@ class UpdateInventoryMessage:
         # Deserialize from JSON
         obj = json.loads(data.decode('utf-8'))
         return cls(obj['version'], obj['itemID'], obj['newQuantity'])
+    
+class DeleteInventoryMessage:
+    def __init__(self, version, itemID):
+        self.version = version
+        self.itemID = itemID
+        self.type = 'delete'
+
+    def to_bytes(self):
+        # Simple JSON-based serialization
+        return json.dumps({
+            'type': self.type,
+            'version': self.version,
+            'itemID': self.itemID
+        }).encode('utf-8')
+
+    @classmethod
+    def from_bytes(cls, data):
+        # Deserialize from JSON
+        obj = json.loads(data.decode('utf-8'))
+        return cls(obj['version'], obj['itemID'])
+    
+class AddInventoryMessage:
+    def __init__(self, version, itemId, itemName, quantity):
+        self.version = version
+        self.itemId = itemId
+        self.itemName = itemName
+        self.quantity = quantity
+        self.type = 'add'
+
+    def to_bytes(self):
+        return json.dumps({
+            'type': self.type,
+            'version': self.version,
+            'itemId': self.itemId,
+            'itemName': self.itemName,
+            'quantity': self.quantity
+        }).encode('utf-8')
+
+    @classmethod
+    def from_bytes(cls, data):
+        obj = json.loads(data.decode('utf-8'))
+        return cls(obj['version'],obj['itemId'], obj['itemName'], obj['quantity'])
