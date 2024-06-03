@@ -34,7 +34,7 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
 
         # Interaction loop for updates
         while True:
-            response = input("[cli] Select an action - Update (u), Delete (d), Add(a), Exit (e): ").lower()
+            response = input("[cli] Select an action - Update (u), Delete (d), Add(a), view Log(v) Exit (e): ").lower()
             if response == "u":
                 update_stream_id = await update_item(conn, item_ids)
                 if update_stream_id is not None:
@@ -47,11 +47,13 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
                 add_stream_id = await add_item(conn, item_ids)
                 if add_stream_id is not None:
                     await display_updated_inventory(conn, add_stream_id)
+            elif response == "v":
+                await view_audit_log(conn)
             elif response == "e":
                 print("Thank you for using the inventory management system!")
                 break
             else:
-                print("Invalid input. Please choose 'u', 'd', or 'e'.")
+                print("Invalid input. Please choose 'u', 'd', 'a', 'v' or 'e'.")
                 continue
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -114,4 +116,19 @@ async def add_item(conn, item_ids):
     add_message = pdu.AddInventoryMessage(1, item_id, item_name, item_quantity).to_bytes()
     print("[cli] Sending Add request")
     await conn.send(QuicStreamEvent(add_stream_id, add_message, False))
+    print(f"[cli] Added new item {item_name} with ID {item_id} and quantity {item_quantity}")
     return add_stream_id
+
+async def view_audit_log(conn):
+    log_stream_id = conn.new_stream()
+    log_request_message = json.dumps({'type': 'audit_log'}).encode('utf-8')
+    print("[cli] Sending audit log request")
+    await conn.send(QuicStreamEvent(log_stream_id, log_request_message, False))
+    print("Fetching audit log...")
+    log_data = ""
+    while True:
+        message = await conn.receive()
+        log_data += message.data.decode('utf-8')
+        if message.end_stream:
+            break
+    print(log_data)
