@@ -19,15 +19,15 @@ async def inventory_server_proto(scope, conn: EchoQuicConnection):
         print("[svr] Received message")
         
         data = json.loads(message.data.decode('utf-8'))
-        if data['type'] == 'query':
+        if data['type'] == 'query': #if initial table request received
             print("[svr] Query received")
-            for item in inventory_items:
-                irm = pdu.InventoryResponseMessage(2, item['id'], item['name'], item['quantity'])
+            for item in inventory_items: #Sending initial item list to client
+                irm = pdu.InventoryResponseMessage(2, item['id'], item['name'], item['quantity']) 
                 rsp_event = QuicStreamEvent(message.stream_id, irm.to_bytes(), False)
                 await conn.send(rsp_event)
             await conn.send(QuicStreamEvent(message.stream_id, b'', True))  # Close this stream
 
-        elif data['type'] == 'update':
+        elif data['type'] == 'update': #if update request received
             print("[svr] Update received")
             item_to_update = next((item for item in inventory_items if item['id'] == data['itemID']), None)
             if item_to_update:
@@ -45,7 +45,7 @@ async def inventory_server_proto(scope, conn: EchoQuicConnection):
                 await conn.send(QuicStreamEvent(message.stream_id, irm.to_bytes(), False))
             await conn.send(QuicStreamEvent(message.stream_id, b'', True))
 
-        elif data['type'] == 'delete':
+        elif data['type'] == 'delete': #If delete request received
             print("[svr] Delete received")
             item_to_delete = next((item for item in inventory_items if item['id'] == data['itemID']), None)
             if item_to_delete:
@@ -61,7 +61,7 @@ async def inventory_server_proto(scope, conn: EchoQuicConnection):
                 await conn.send(QuicStreamEvent(message.stream_id, irm.to_bytes(), False))
             await conn.send(QuicStreamEvent(message.stream_id, b'', True))
 
-        elif data['type'] == 'add':
+        elif data['type'] == 'add': #if add request received
             print("[svr] Add received")
             new_item_id = data['itemId']
             new_item_name = data['itemName']
@@ -79,7 +79,7 @@ async def inventory_server_proto(scope, conn: EchoQuicConnection):
                 await conn.send(QuicStreamEvent(message.stream_id, irm.to_bytes(), False))
             await conn.send(QuicStreamEvent(message.stream_id, b'', True))
 
-        elif data['type'] == 'audit_log':
+        elif data['type'] == 'audit_log': #if audit request received
             print("[svr] Audit log request received")
             log_data = change_log.to_json().encode('utf-8')
             await conn.send(QuicStreamEvent(message.stream_id, log_data, True))
