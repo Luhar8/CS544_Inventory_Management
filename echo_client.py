@@ -98,6 +98,7 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
         print("Closing the connection...")
         await conn.close()
 
+#For displaying updated table
 async def display_updated_inventory(conn, stream_id):
     table = []
     headers = ["Item Number", "Item Name", "Quantity"]
@@ -112,6 +113,7 @@ async def display_updated_inventory(conn, stream_id):
         item_ids.append(irm.itemID)
     print(tabulate(table, headers, tablefmt="grid"))
 
+#For updating item in the list
 async def update_item(conn, item_ids):
     item_id = int(input("Enter the Item ID to update: "))
     if item_id not in item_ids:
@@ -127,6 +129,7 @@ async def update_item(conn, item_ids):
     await conn.send(QuicStreamEvent(update_stream_id, update_message, False))
     return update_stream_id
 
+# For deleting a item in list
 async def delete_item(conn, item_ids):
     item_id = int(input("Enter the Item ID to delete: "))
     if item_id not in item_ids:
@@ -138,6 +141,7 @@ async def delete_item(conn, item_ids):
     await conn.send(QuicStreamEvent(delete_stream_id, delete_message, False))
     return delete_stream_id
 
+#For adding a item in list
 async def add_item(conn, item_ids):
     item_id = int(input("Enter the Item ID to add: "))
     if item_id in item_ids:
@@ -155,6 +159,7 @@ async def add_item(conn, item_ids):
     print(f"[cli] Added new item {item_name} with ID {item_id} and quantity {item_quantity}")
     return add_stream_id
 
+# For viewing the audit
 async def view_audit_log(conn):
     log_stream_id = conn.new_stream()
     log_request_message = json.dumps({'type': 'audit_log'}).encode('utf-8')

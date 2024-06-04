@@ -1,55 +1,9 @@
-# import json
-
-# class QueryInventoryMessage:
-#     def __init__(self, messageType, clientID, timestamp):
-#         self.messageType = messageType
-#         self.clientID = clientID
-#         self.timestamp = timestamp
-
-#     def to_json(self):
-#         return json.dumps(self.__dict__)
-
-#     @staticmethod
-#     def from_json(json_str):
-#         data = json.loads(json_str)
-#         return QueryInventoryMessage(**data)
-
-#     def to_bytes(self):
-#         return self.to_json().encode('utf-8')
-
-#     @staticmethod
-#     def from_bytes(json_bytes):
-#         return QueryInventoryMessage.from_json(json_bytes.decode('utf-8'))
-
-
-# class InventoryResponseMessage:
-#     def __init__(self, messageType, itemID, itemName, quantity):
-#         self.messageType = messageType
-#         self.itemID = itemID
-#         self.itemName = itemName
-#         self.quantity = quantity
-
-#     def to_json(self):
-#         return json.dumps(self.__dict__)
-
-#     @staticmethod
-#     def from_json(json_str):
-#         data = json.loads(json_str)
-#         return InventoryResponseMessage(**data)
-
-#     def to_bytes(self):
-#         return self.to_json().encode('utf-8')
-
-#     @staticmethod
-#     def from_bytes(json_bytes):
-#         return InventoryResponseMessage.from_json(json_bytes.decode('utf-8'))
-
 # pdu.py
 
 import json
 import struct
 
-class QueryInventoryMessage:
+class QueryInventoryMessage: #Message definition for initial table
     def __init__(self, version, clientID, timestamp):
         self.version = version
         self.clientID = clientID
@@ -71,7 +25,7 @@ class QueryInventoryMessage:
         obj = json.loads(data.decode('utf-8'))
         return cls(obj['version'], obj['clientID'], obj['timestamp'])
 
-class InventoryResponseMessage:
+class InventoryResponseMessage: #Message definition for Inventory response sent to client
     def __init__(self, version, itemID, itemName, quantity):
         self.version = version
         self.itemID = itemID
@@ -93,7 +47,7 @@ class InventoryResponseMessage:
         obj = json.loads(data.decode('utf-8'))
         return cls(obj['version'], obj['itemID'], obj['itemName'], obj['quantity'])
 
-class UpdateInventoryMessage:
+class UpdateInventoryMessage: #Message definition for update request sent to server
     def __init__(self, version, itemID, newQuantity):
         self.version = version
         self.itemID = itemID
@@ -115,7 +69,7 @@ class UpdateInventoryMessage:
         obj = json.loads(data.decode('utf-8'))
         return cls(obj['version'], obj['itemID'], obj['newQuantity'])
     
-class DeleteInventoryMessage:
+class DeleteInventoryMessage: #Message definition for delete request sent to server
     def __init__(self, version, itemID):
         self.version = version
         self.itemID = itemID
@@ -135,7 +89,7 @@ class DeleteInventoryMessage:
         obj = json.loads(data.decode('utf-8'))
         return cls(obj['version'], obj['itemID'])
     
-class AddInventoryMessage:
+class AddInventoryMessage: #Message definition for add request sent to server
     def __init__(self, version, itemId, itemName, quantity):
         self.version = version
         self.itemId = itemId
