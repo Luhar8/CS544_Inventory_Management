@@ -54,7 +54,7 @@ Follow the steps below to set up and run the application:
      ```
 
 6. **Run the Client**
-   - Open a new terminal and execute the client. This will establish the connection between the client and server:
+   - Open a new terminal and execute the client.Make sure the client terminal is in virtual environment by following above steps. This will establish the connection between the client and server:
      ```sh
      (.venv) rahul@Rahuls-MBP CS544 % python3 echo.py client
 
@@ -97,3 +97,6 @@ Follow the steps below to set up and run the application:
 ## Notes
 - Ensure that the server is running before starting the client.
 - All operations (add, update, delete) will reflect in the inventory list after each action.
+
+## Youtube Link
+Below is the youtube link describing about project: https://youtu.be/qtuT_YFrgF8
