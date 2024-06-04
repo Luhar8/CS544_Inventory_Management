@@ -57,24 +57,34 @@ Follow the steps below to set up and run the application:
    - Open a new terminal and execute the client. This will establish the connection between the client and server:
      ```sh
      (.venv) rahul@Rahuls-MBP CS544 % python3 echo.py client
+
      ```
+   - The user credentials for the application is
+      - For Admin (Can View, Add, Update, Delete)
+         - Email: admin@example.com
+         - Password: adminpassword
+      - For Client (Only View)
+         - Email: client@example.com
+         - Passowrd: clientpassword
    - The client output should look like this:
      ```sh
-     Welcome to Inventory Management Tool.
-     [cli] Sending initial inventory request
-     [cli] Received initial inventory items from server
-     +---------------+-------------+------------+
-     |   Item Number | Item Name   |   Quantity |
-     +===============+=============+============+
-     |           101 | Apples      |         50 |
-     +---------------+-------------+------------+
-     |           102 | Whole Milk  |         75 |
-     +---------------+-------------+------------+
-     |           103 | Coffee      |         25 |
-     +---------------+-------------+------------+
-     |           104 | Yogurt      |         30 |
-     +---------------+-------------+------------+
-     [cli] Select an action - Update (u), Delete (d), Add (a), Exit (e):
+      Welcome to Inventory Management Tool.
+      Enter your email: admin@example.com
+      Enter your password: adminpassword
+      [cli] Sending initial inventory request
+      [cli] Received initial inventory items from server
+      +---------------+-------------+------------+
+      |   Item Number | Item Name   |   Quantity |
+      +===============+=============+============+
+      |           101 | Apples      |         50 |
+      +---------------+-------------+------------+
+      |           102 | Whole Milk  |         75 |
+      +---------------+-------------+------------+
+      |           103 | Coffee      |         25 |
+      +---------------+-------------+------------+
+      |           104 | Yogurt      |         30 |
+      +---------------+-------------+------------+
+      [cli] Select an action - Update (u), Delete (d), Add(a), View Log(v), Exit (e):
      ```
 
 ### Usage
