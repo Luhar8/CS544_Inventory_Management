@@ -1,18 +1,42 @@
-
 # echo_client.py
-
 from echo_quic import EchoQuicConnection, QuicStreamEvent
 import pdu
 import time
 import json
 from tabulate import tabulate
 
+# Define hardcoded user credentials along with roles
+users = {
+    "admin@example.com": {"password": "adminpassword", "role": "admin"},
+    "client@example.com": {"password": "clientpassword", "role": "client"}
+}
+
+# Define authentication function to return email and role
+def authenticate_user():
+    email = input("Enter your email: ")
+    password = input("Enter your password: ")
+
+    if email in users and users[email]["password"] == password:
+        return email, users[email]["role"]
+    else:
+        print("Invalid email or password. Please try again.")
+        return None, None
+
+# Initialize item_ids
 item_ids = []
 
+# Define inventory_client_proto function
 async def inventory_client_proto(scope, conn: EchoQuicConnection):
     print("Welcome to Inventory Management Tool.")
-    # Initial inventory fetch
+    # Authenticate user
+    email, role = authenticate_user()
+    if not email:
+        print("Authentication failed. Exiting...")
+        return
+
+    # Initial inventory fetch and interaction loop for viewing inventory and audit log
     try:
+        # Initial inventory fetch
         qim = pdu.QueryInventoryMessage(1, 12345, int(time.time()), )
         initial_stream_id = conn.new_stream()
         print("[cli] Sending initial inventory request")
@@ -32,36 +56,48 @@ async def inventory_client_proto(scope, conn: EchoQuicConnection):
             item_ids.append(irm.itemID)
         print(tabulate(table, headers, tablefmt="grid"))
 
-        # Interaction loop for updates
-        while True:
-            response = input("[cli] Select an action - Update (u), Delete (d), Add(a), view Log(v) Exit (e): ").lower()
-            if response == "u":
-                update_stream_id = await update_item(conn, item_ids)
-                if update_stream_id is not None:
-                    await display_updated_inventory(conn, update_stream_id)
-            elif response == "d":
-                delete_stream_id = await delete_item(conn, item_ids)
-                if delete_stream_id is not None:
-                    await display_updated_inventory(conn, delete_stream_id)
-            elif response == "a":
-                add_stream_id = await add_item(conn, item_ids)
-                if add_stream_id is not None:
-                    await display_updated_inventory(conn, add_stream_id)
-            elif response == "v":
-                await view_audit_log(conn)
-            elif response == "e":
-                print("Thank you for using the inventory management system!")
-                break
-            else:
-                print("Invalid input. Please choose 'u', 'd', 'a', 'v' or 'e'.")
-                continue
+        # Interaction loop based on user role
+        if role == "admin":
+            while True:
+                response = input("[cli] Select an action - Update (u), Delete (d), Add(a), View Log(v), Exit (e): ").lower()
+                if response == "u":
+                    update_stream_id = await update_item(conn, item_ids)
+                    if update_stream_id is not None:
+                        await display_updated_inventory(conn, update_stream_id)
+                elif response == "d":
+                    delete_stream_id = await delete_item(conn, item_ids)
+                    if delete_stream_id is not None:
+                        await display_updated_inventory(conn, delete_stream_id)
+                elif response == "a":
+                    add_stream_id = await add_item(conn, item_ids)
+                    if add_stream_id is not None:
+                        await display_updated_inventory(conn, add_stream_id)
+                elif response == "v":
+                    await view_audit_log(conn)
+                elif response == "e":
+                    print("Thank you for using the inventory management system!")
+                    break
+                else:
+                    print("Invalid input. Please choose 'u', 'd', 'a', 'v' or 'e'.")
+                    continue
+        else:
+            while True:
+                response = input("[cli] Select an action - View Log(v), Exit (e): ").lower()
+                if response == "v":
+                    await view_audit_log(conn)
+                elif response == "e":
+                    print("Thank you for using the inventory management system!")
+                    break
+                else:
+                    print("Invalid input. Please choose 'v' or 'e'.")
+                    continue
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
         # Ensure the connection is closed properly
         print("Closing the connection...")
         await conn.close()
-    
+
 async def display_updated_inventory(conn, stream_id):
     table = []
     headers = ["Item Number", "Item Name", "Quantity"]
